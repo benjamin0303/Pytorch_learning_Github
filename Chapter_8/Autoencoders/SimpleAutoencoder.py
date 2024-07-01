@@ -87,20 +87,25 @@ trainloader = DataLoader(trainset,
                          batch_size=32,
                          shuffle=True)
 
+writer = SummaryWriter('./mnist_autoencoder=2_logs')
+
 # Training Loop 
 NUM_EPOCHS = 10
 for epoch in range(NUM_EPOCHS):
-	for input, labels in trainloader:
-		input = input.to(device)
-		optimizer.zero_grad()
-		code = encoder(input)
-		output = decoder(code)
-		#print(input.shape, output.shape)
-		loss = loss_fn(output, input)
-		loss.backward()
-		optimizer.step()
-	print(f"Epoch: {epoch} Loss: {loss}")
+    for input, labels in trainloader:
+        input = input.to(device)
+        optimizer.zero_grad()
+        code = encoder(input)
+        output = decoder(code)
+        #print(input.shape, output.shape)
+        loss = loss_fn(output, input)
+        loss.backward()
+        optimizer.step()
 
+    writer.add_scalar('Loss/train', loss.item(), epoch)
+    print(f"Epoch: {epoch} Loss: {loss}")
+
+writer.close()
 
 i = 0
 encoder.eval()
@@ -121,5 +126,12 @@ with torch.no_grad():
     grid = utils.make_grid(output).cpu()
     plt.figure()
     plt.imshow(grid.permute(1,2,0))
+    plt.show()
     i += 1
-    
+
+
+
+### There will be a folder named "mnist_autoencoder=2_logs" created in ./
+### Then run "tensorboard --logdir .\mnist_autoencoder=2_logs\" in powershell
+### It will make you to go to http://localhost:6006/
+### You can see Tensorboard outputs there
